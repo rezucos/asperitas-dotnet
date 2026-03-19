@@ -21,7 +21,7 @@ class CommentDetail extends React.Component {
         <CommentDetailTimestamp created={this.props.created} />
         {this.props.token &&
           (this.props.user.id === this.props.author.id ||
-            this.props.user.admin) && (
+            this.props.user.isAdmin === "True") && (
             <DeleteButton onClick={this.deleteComment} />
           )}
       </Wrapper>

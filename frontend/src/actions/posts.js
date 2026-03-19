@@ -17,20 +17,22 @@ const fetchPostsRequest = { type: FETCH_POSTS_REQUEST };
 const fetchPostsSuccess = posts => ({ type: FETCH_POSTS_SUCCESS, posts });
 const fetchPostsError = error => ({ type: FETCH_POSTS_ERROR, error });
 
-export const fetchPosts = (category = '') => async dispatch => {
+export const fetchPosts = (category = '') => async (dispatch, getState) => {
   dispatch(fetchPostsRequest);
   try {
-    const posts = await getPosts(category);
+    const { token } = getState().auth;
+    const posts = await getPosts(category, token);
     dispatch(fetchPostsSuccess(posts));
   } catch (error) {
     dispatch(fetchPostsError(error));
   }
 };
 
-export const fetchProfile = username => async dispatch => {
+export const fetchProfile = username => async (dispatch, getState) => {
   dispatch(fetchPostsRequest);
   try {
-    const posts = await getProfile(username);
+    const { token } = getState().auth;
+    const posts = await getProfile(username, token);
     dispatch(fetchPostsSuccess(posts));
   } catch (error) {
     dispatch(fetchPostsError(error));
@@ -45,10 +47,11 @@ const fetchPostRequest = { type: FETCH_POST_REQUEST };
 const fetchPostSuccess = post => ({ type: FETCH_POST_SUCCESS, post });
 const fetchPostError = error => ({ type: FETCH_POST_ERROR, error });
 
-export const fetchPost = id => async dispatch => {
+export const fetchPost = id => async (dispatch, getState) => {
   dispatch(fetchPostRequest);
   try {
-    const post = await getPost(id);
+    const { token } = getState().auth;
+    const post = await getPost(id, token);
     dispatch(fetchPostSuccess(post));
   } catch (error) {
     dispatch(fetchPostError(error));

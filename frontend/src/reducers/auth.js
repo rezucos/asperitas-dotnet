@@ -10,7 +10,11 @@ import {
 } from '../actions/auth';
 
 const token = localStorage.getItem('token');
-const user = token && jwtDecode(token).user;
+const user = token && {
+  id: jwtDecode(token).id,
+  username: jwtDecode(token).username,
+  isAdmin: jwtDecode(token).isAdmin
+};
 
 const initialState = {
   ...(token && { token }),

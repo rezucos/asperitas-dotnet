@@ -15,7 +15,7 @@ const methods = {
     const response = await fetch(`${baseUrl}/${endpoint}`, options);
     const json = await response.json();
 
-    if (!response.ok) throw Error(json.message);
+    if (!response.ok) throw buildError(json);
 
     return json;
   },
@@ -34,13 +34,7 @@ const methods = {
     const json = await response.json();
 
     if (!response.ok) {
-      if (response.status === 422) {
-        json.errors.forEach(error => {
-          throw Error(`${error.param} ${error.msg}`);
-        });
-      }
-
-      throw Error(json.message);
+      throw buildError(json);
     }
 
     return json;
@@ -60,33 +54,42 @@ const methods = {
 
     if (!response.ok) {
       if (response.status === 401) throw Error('unauthorized');
-      throw Error(json.message);
+      throw buildError(json);
     }
 
     return json;
   }
 };
 
+function buildError (json) {
+  const message = (json && json.message) ? json.message : 'Request failed';
+  const error = new Error(message);
+  if (json && Array.isArray(json.errors) && json.errors.length > 0) {
+    error.errors = json.errors;
+  }
+  return error;
+}
+
 export async function login (username, password) {
-  const json = await methods.post('login', { username, password });
+  const json = await methods.post('auth/login', { username, password });
   return json.token;
 }
 
 export async function signup (username, password) {
-  const json = await methods.post('register', { username, password });
+  const json = await methods.post('auth/register', { username, password });
   return json.token;
 }
 
-export async function getPosts (category) {
-  return await methods.get(`posts/${category}`);
+export async function getPosts (category, token) {
+  return await methods.get(category ? `posts?category=${category}` : "posts", token);
 }
 
-export async function getProfile (username) {
-  return await methods.get(`user/${username}`);
+export async function getProfile (username, token) {
+  return await methods.get(`users/${username}`, token);
 }
 
-export async function getPost (id) {
-  return await methods.get(`post/${id}`);
+export async function getPost (id, token) {
+  return await methods.get(`posts/${id}`, token);
 }
 
 export async function createPost (body, token) {
@@ -94,15 +97,15 @@ export async function createPost (body, token) {
 }
 
 export async function deletePost (id, token) {
-  return await methods.delete(`post/${id}`, token);
+  return await methods.delete(`posts/${id}`, token);
 }
 
-export async function createComment (post, comment, token) {
-  return await methods.post(`post/${post}`, comment, token);
+export async function createComment (postId, comment, token) {
+  return await methods.post(`posts/${postId}/comment`, comment, token);
 }
 
-export async function deleteComment (post, comment, token) {
-  return await methods.delete(`post/${post}/${comment}`, token);
+export async function deleteComment (postId, commentId, token) {
+  return await methods.delete(`posts/${postId}/comment/${commentId}`, token);
 }
 
 export async function castVote (id, vote, token) {
@@ -114,5 +117,5 @@ export async function castVote (id, vote, token) {
 
   const voteType = voteTypes[vote];
 
-  return await methods.get(`post/${id}/${voteType}`, token);
+  return await methods.post(`posts/${id}/${voteType}`, {}, token);
 }

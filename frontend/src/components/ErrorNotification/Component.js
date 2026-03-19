@@ -38,13 +38,23 @@ const Wrapper = styled.div`
 
 class ErrorNotification extends React.Component {
   render() {
+    const { error } = this.props;
+    const errors = error && Array.isArray(error.errors) ? error.errors : null;
+
     return (
       <TransitionGroup component={null}>
-        {this.props.error && (
+        {error && (
           <CSSTransition classNames={className} timeout={300}>
             <Wrapper>
               <ErrorNotificationMessage>
-                {this.props.error.message}
+                <div>{error.message}</div>
+                {errors && (
+                  <div>
+                    {errors.map((item, index) => (
+                      <div key={`${item}-${index}`}>{item}</div>
+                    ))}
+                  </div>
+                )}
               </ErrorNotificationMessage>
             </Wrapper>
           </CSSTransition>
